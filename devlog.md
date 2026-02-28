@@ -33,3 +33,16 @@ cat testlog.txt
 
 ## Next Session
 Start encryptor.cpp  and test standalone.
+
+Febuary 28th 4:56PM
+## Thoughts So Far
+Starting encryptor.cpp currently. IT Waits for commands from standard input (stdin), Stores an encryption key, Encrypts or decrypts text using the Vigenère cipher, and stops when it receives QUIT
+it continuously reads a line from input, checks what command it is,executes that command,prints output, and waits for the next line
+
+## Plan For This Session
+- Step 1: skeleton + usage
+- Step 2: stdin loop + QUIT
+- Step 3: implement the PASS command
+- Step 4: implement Vigenère encryption
+- Step 5: implement decryption
+- Test all cases
