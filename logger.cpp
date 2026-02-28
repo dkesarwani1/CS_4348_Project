@@ -5,43 +5,43 @@
 #include <ctime>
 #include <iomanip>
 using namespace std;
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) 
+{
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <logfile>\n";
         return 1;
     }
 
     std::ofstream logFile(argv[1], std::ios::app);
-    if (!logFile.is_open()) {
+    if (!logFile.is_open()) 
+    {
         std::cerr << "Error: could not open log file.\n";
         return 1;
     }
 
     std::string line;
-    while (std::getline(std::cin, line)) {
-        if (line == "QUIT") break;
-        if (line.empty()) continue;
-
+    while (std::getline(std::cin, line)) 
+    {
+        if (line == "QUIT") 
+            break;
+        if (line.empty()) 
+            continue;
         std::istringstream iss(line);
         std::string action;
         iss >> action;
-        if (action.empty()) continue;
-
+        if (action.empty()) 
+            continue;
         std::string message;
         std::getline(iss, message);
         if (!message.empty() && message[0] == ' ')
             message.erase(0, 1);
-
         std::time_t now = std::time(nullptr);
         std::tm local_tm = *std::localtime(&now);
+        ostringstream ts;
+        ts << std::put_time(&local_tm, "%Y-%m-%d %H:%M");
 
-        std::ostringstream ts;
-        ts << put_time(&local_tm, "%Y-%m-%d %H:%M");
-
-        // (Still no writing yet in Step 5)
-        // You could temporarily print ts.str() to stderr for testing, but remove it after.
-        std::cerr << ts.str() << " " << action << " " << message << "\n";
+        logFile << ts.str() << " [" << action << "] " << message << "\n";
+        logFile.flush();
     }
-
     return 0;
 }
