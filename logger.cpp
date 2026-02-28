@@ -2,35 +2,45 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <ctime>
+#include <iomanip>
 using namespace std;
 int main(int argc, char* argv[]) {
     if (argc != 2) {
-        cerr << "Usage: " << argv[0] << " <logfile>\n";
+        std::cerr << "Usage: " << argv[0] << " <logfile>\n";
         return 1;
     }
 
-    ofstream logFile(argv[1], std::ios::app);
+    std::ofstream logFile(argv[1], std::ios::app);
     if (!logFile.is_open()) {
         std::cerr << "Error: could not open log file.\n";
         return 1;
     }
 
     std::string line;
-    while (std::getline(std::cin, line)) 
-    {
+    while (std::getline(std::cin, line)) {
         if (line == "QUIT") break;
         if (line.empty()) continue;
+
         std::istringstream iss(line);
         std::string action;
         iss >> action;
         if (action.empty()) continue;
 
-        string message;
-        getline(iss, message);
+        std::string message;
+        std::getline(iss, message);
         if (!message.empty() && message[0] == ' ')
             message.erase(0, 1);
-        logFile << line << std::endl;
-        logFile.flush(); // Ensure line is written immediately
+
+        std::time_t now = std::time(nullptr);
+        std::tm local_tm = *std::localtime(&now);
+
+        std::ostringstream ts;
+        ts << put_time(&local_tm, "%Y-%m-%d %H:%M");
+
+        // (Still no writing yet in Step 5)
+        // You could temporarily print ts.str() to stderr for testing, but remove it after.
+        std::cerr << ts.str() << " " << action << " " << message << "\n";
     }
 
     return 0;
