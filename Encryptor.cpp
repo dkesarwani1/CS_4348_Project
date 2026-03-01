@@ -19,7 +19,21 @@ static string to_upper(const string& s)
     for (char& c : out) c = (char)toupper((unsigned char)c);
     return out;
 }
+static string vigenere_decrypt(const string& cipher, const string& key) {
+    string out;
+    out.reserve(cipher.size());
+    int a = 0;
 
+    for (size_t x = 0; x < cipher.size(); x++) 
+    {
+        char c = cipher[x];
+        int shift = key[a % (int)key.size()] - 'A';
+        char p = (char)('A' + (c - 'A' - shift + 26) % 26);
+        out.push_back(p);
+        a++;
+    }
+    return out;
+}
 static string vigenere_encrypt(const string& plain, const string& key) 
 {
     string out;
@@ -96,6 +110,24 @@ int main()
             string plain = to_upper(arg);
             string cipher = vigenere_encrypt(plain, key);
             cout << "RESULT " << cipher << "\n";
+        }
+        else if (command == "DECRYPT") 
+        {
+            if (!has_key) 
+            {
+                cout << "ERROR Password not set\n";
+                continue;
+            }
+            if (arg.empty()) {
+                cout << "ERROR Missing text\n";
+                continue;
+            }
+            if (!all_letters(arg)) {
+                cout << "ERROR Text must be letters only\n";
+                continue;
+            }
+            string cipher = to_upper(arg);
+            cout << "RESULT " << vigenere_decrypt(cipher, key) << "\n";
         }
         else 
         {
