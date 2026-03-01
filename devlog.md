@@ -46,3 +46,21 @@ it continuously reads a line from input, checks what command it is,executes that
 - Step 4: implement Vigenère encryption
 - Step 5: implement decryption
 - Test all cases
+
+# 2026-02-28 10:46PM
+
+## Session Reflection
+Encryptor can now successfully do pass, encrypt, Decrypt, and quit using Vigenère cipher. It prints RESULT for success and ERROR for invalid usage.
+
+## Testing Performed
+- PASS KEY
+- ENCRYPT HELLO => RIJVS
+- DECRYPT RIJVS => HELLO
+- Confirmed ERROR when ENCRYPT/DECRYPT used before PASS
+
+## Issues Encountered
+- Needed to parse the rest of the line after the command using getline on the stringstream.
+- Normalized inputs to uppercase to simplify cipher math.
+
+## Next Session Plan
+Build driver.cpp tomorrow and connect it to logger and encryptor using pipes and fork/dup2.
