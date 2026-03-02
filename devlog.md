@@ -64,3 +64,19 @@ Encryptor can now successfully do pass, encrypt, Decrypt, and quit using Vigenè
 
 ## Next Session Plan
 Build driver.cpp tomorrow and connect it to logger and encryptor using pipes and fork/dup2.
+
+# 2026-02-28 6:57 PM
+
+## Thoughts So Far
+Starting driver.cpp. Driver must fork logger and encryptor, connect pipes using dup2, and provide menu interface. It should log commands/results and maintain a list for history for this run.
+
+## Plan For This Session
+- Step 1: driver skeleton + args
+- Step 2: create pipes and fork/exec logger
+- Step 3: fork/exec encryptor + connect stdin/stdout
+- Step 4: helper functions (writeLine/readLine)
+- Step 5: menu loop and PASS
+- Step 6: ENCRYPT + DECRYPT (send to encryptor, read response)
+- Step 7: history feature
+- Step 8: quit flow and cleanup waitpid
+- Test after every step
