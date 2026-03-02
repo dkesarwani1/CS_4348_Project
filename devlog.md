@@ -84,3 +84,6 @@ Starting driver.cpp. Driver must fork logger and encryptor, connect pipes using 
 ## Update
 March 1st 11:39PM
 Got up so step 3 finsihed where I create the skeleton code, created pepes and fork/ecec logger and also the fork/exec encryptor while also connect the stdin/stdout.
+
+# 2026-03-2 11:12 AM
+Goal is to finish Driver.cpp today and finish Step 4-8 and test evert step to make sure it works correctly and make sure the code works with all the programs together.
