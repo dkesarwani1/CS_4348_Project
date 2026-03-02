@@ -80,3 +80,7 @@ Starting driver.cpp. Driver must fork logger and encryptor, connect pipes using 
 - Step 7: history feature
 - Step 8: quit flow and cleanup waitpid
 - Test after every step
+
+## Update
+March 1st 11:39PM
+Got up so step 3 finsihed where I create the skeleton code, created pepes and fork/ecec logger and also the fork/exec encryptor while also connect the stdin/stdout.
