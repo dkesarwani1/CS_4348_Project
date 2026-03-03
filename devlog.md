@@ -87,3 +87,57 @@ Got up so step 3 finsihed where I create the skeleton code, created pepes and fo
 
 # 2026-03-2 11:12 AM
 Goal is to finish Driver.cpp today and finish Step 4-8 and test evert step to make sure it works correctly and make sure the code works with all the programs together.
+
+# 2026-02-28 03:10
+
+## Session Summary
+Did full integration of logger, encryptor, and driver using pipes, fork, dup2, and exec. Successfully tested all three programs work independently and together.
+
+## What Was Completed
+- logger.cpp correctly appends timestamped log entries and ignores QUIT.
+- encryptor.cpp supports PASS, ENCRYPT, DECRYPT, QUIT using Vigenère cipher.
+- driver.cpp:
+  - forks logger and encryptor
+  - connects pipes using dup2
+  - sends commands to encryptor
+  - reads responses from encryptor
+  - logs actions and results via logger
+  - maintains session history
+  - shuts down cleanly using QUIT and waitpid
+
+After Finsihing did a lot of tests to see it working
+## Testing Performed
+
+### Logger standalone
+- Verified timestamp format
+- Confirmed QUIT is not logged
+
+### Encryptor standalone
+- PASS stores key
+- ENCRYPT produces expected ciphertext
+- DECRYPT returns original plaintext
+- Confirmed ERROR when ENCRYPT used before PASS
+
+### Driver integration
+- Set password successfully
+- Encrypted HELLO → correct ciphertext
+- Decrypted ciphertext → returned HELLO
+- History displays session results
+- Log file contains timestamped entries
+- Clean shutdown confirmed (no hanging processes)
+
+## Issues Encountered
+- Needed to carefully close unused pipe ends to prevent blocking.
+- Ensured readLine waits for newline to avoid hanging.
+- Verified encryptor prints newline after every RESULT.
+
+## Key tasks done
+- fork()
+- pipe()
+- dup2()
+- exec()
+- parent/child process coordination
+- IPC
+
+## Next Steps
+Final review of formatting and will submit it.
