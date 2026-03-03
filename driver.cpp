@@ -9,11 +9,9 @@ using namespace std;
 static bool writeLine(int fd, const string& s) 
 {
     string out = s;
-    if (out.empty() || out.back() != '\n') 
-        out.push_back('\n');
+    if (out.empty() || out.back() != '\n') out.push_back('\n');
     size_t total = 0;
-    while (total < out.size())
-    {
+    while (total < out.size()) {
         ssize_t n = write(fd, out.data() + total, out.size() - total);
         if (n < 0) { if (errno == EINTR) continue; return false; }
         total += (size_t)n;
@@ -29,7 +27,7 @@ static bool readLine(int fd, string& line)
     {
         ssize_t n = read(fd, &ch, 1);
         if (n == 0) return !line.empty();
-        if (n < 0) 
+        if (n < 0)
         { 
             if (errno == EINTR) continue; return false; 
         }
@@ -38,8 +36,13 @@ static bool readLine(int fd, string& line)
     }
 }
 
-static void printMenu() 
-{
+static bool lettersOnly(const string& s) {
+    if (s.empty()) return false;
+    for (unsigned char c : s) if (!isalpha(c)) return false;
+    return true;
+}
+
+static void printMenu() {
     cout << "\nCommands:\n"
               << "  password\n"
               << "  encrypt\n"
@@ -47,6 +50,16 @@ static void printMenu()
               << "  history\n"
               << "  quit\n"
               << "> ";
+}
+
+static void printHistory(const vector<string>& hist) {
+    if (hist.empty()) {
+        cout << "(history empty)\n";
+        return;
+    }
+    for (size_t i = 0; i < hist.size(); i++) {
+        cout << i + 1 << ") " << hist[i] << "\n";
+    }
 }
 
 int main(int argc, char* argv[]) 
@@ -58,19 +71,21 @@ int main(int argc, char* argv[])
     }
     const char* logfile = argv[1];
 
-    // fork logger 
+    // fork logger
     int logPipe[2];
     if (pipe(logPipe) == -1) 
     { 
         perror("pipe"); return 1; 
     }
+
     pid_t logPid = fork();
     if (logPid < 0) 
-    { 
-        perror("fork"); return 1; 
+    {
+         perror("fork"); return 1; 
     }
 
-    if (logPid == 0) {
+    if (logPid == 0) 
+    {
         dup2(logPipe[0], STDIN_FILENO);
         close(logPipe[0]); close(logPipe[1]);
         execl("./logger", "logger", logfile, (char*)nullptr);
@@ -79,15 +94,15 @@ int main(int argc, char* argv[])
     }
     close(logPipe[0]); // parent writes to logger
 
-    // fork encryptor 
+    // fork encryptor
     int encIn[2], encOut[2];
     if (pipe(encIn) == -1) 
     { 
         perror("pipe"); return 1; 
     }
     if (pipe(encOut) == -1) 
-    { 
-        perror("pipe"); return 1; 
+    {
+         perror("pipe"); return 1; 
     }
 
     pid_t encPid = fork();
@@ -109,36 +124,114 @@ int main(int argc, char* argv[])
     close(encIn[0]);   // parent writes commands
     close(encOut[1]);  // parent reads responses
 
-    // menu loop 
-    string cmd;
-    string password;
-
     writeLine(logPipe[1], "START Driver started");
+
+    string cmd;
+    string pass;
+    bool hasPass = false;
+
+    vector<string> history;
+
+    auto sendEncryptor = [&](const string& line, string& resp) -> bool 
+    {
+        if (!writeLine(encIn[1], line)) return false;
+        return readLine(encOut[0], resp);
+    };
 
     while (true) 
     {
         printMenu();
         if (!getline(cin, cmd)) break;
 
-        if (cmd == "password") 
-        {
+        if (cmd == "password") {
             cout << "Enter password (letters only): ";
-            getline(cin, password);
+            getline(cin, pass);
 
             writeLine(logPipe[1], "CMD password");
 
-            // pass send
-            writeLine(encIn[1], "PASS " + password);
+            if (!lettersOnly(pass)) {
+                cout << "ERROR Password must be letters only\n";
+                writeLine(logPipe[1], "RESULT ERROR Password must be letters only");
+                continue;
+            }
 
             string resp;
-            if (!readLine(encOut[0], resp)) 
+            if (!sendEncryptor("PASS " + pass, resp)) {
+                cerr << "Encryptor pipe closed.\n";
+                break;
+            }
+            cout << resp << "\n";
+            writeLine(logPipe[1], "RESULT " + resp);
+
+            hasPass = (resp.rfind("RESULT", 0) == 0); // starts with "RESULT"
+        }
+        else if (cmd == "encrypt") 
+        {
+            writeLine(logPipe[1], "CMD encrypt");
+
+            if (!hasPass) 
+            {
+                cout << "ERROR Set password first\n";
+                writeLine(logPipe[1], "RESULT ERROR Set password first");
+                continue;
+            }
+            cout << "Enter plaintext (letters only): ";
+            string plain;
+            getline(cin, plain);
+            if (!lettersOnly(plain)) 
+            {
+                cout << "ERROR Text must be letters only\n";
+                writeLine(logPipe[1], "RESULT ERROR Text must be letters only");
+                continue;
+            }
+            string resp;
+            if (!sendEncryptor("ENCRYPT " + plain, resp)) 
             {
                 cerr << "Encryptor pipe closed.\n";
                 break;
             }
-
             cout << resp << "\n";
             writeLine(logPipe[1], "RESULT " + resp);
+
+            if (resp.rfind("RESULT ", 0) == 0) history.push_back(resp.substr(7));
+        }
+        else if (cmd == "decrypt") 
+        {
+            writeLine(logPipe[1], "CMD decrypt");
+
+            if (!hasPass) 
+            {
+                cout << "ERROR Set password first\n";
+                writeLine(logPipe[1], "RESULT ERROR Set password first");
+                continue;
+            }
+
+            cout << "Enter ciphertext (letters only): ";
+            string cipher;
+            getline(cin, cipher);
+
+            if (!lettersOnly(cipher)) 
+            {
+                cout << "ERROR Text must be letters only\n";
+                writeLine(logPipe[1], "RESULT ERROR Text must be letters only");
+                continue;
+            }
+
+            string resp;
+            if (!sendEncryptor("DECRYPT " + cipher, resp)) 
+            {
+                cerr << "Encryptor pipe closed.\n";
+                break;
+            }
+            cout << resp << "\n";
+            writeLine(logPipe[1], "RESULT " + resp);
+
+            if (resp.rfind("RESULT ", 0) == 0) history.push_back(resp.substr(7));
+        }
+        else if (cmd == "history") 
+        {
+            writeLine(logPipe[1], "CMD history");
+            printHistory(history);
         }
         else if (cmd == "quit") 
         {
@@ -150,15 +243,17 @@ int main(int argc, char* argv[])
             cout << "Unknown command.\n";
         }
     }
+    string resp;
+    sendEncryptor("QUIT", resp);
 
-    // cleanup
-    writeLine(encIn[1], "QUIT");
-    writeLine(logPipe[1], "QUIT");
+    writeLine(logPipe[1], "QUIT"); //makes logger stop
+
     close(encIn[1]);
     close(encOut[0]);
     close(logPipe[1]);
 
     waitpid(encPid, nullptr, 0);
     waitpid(logPid, nullptr, 0);
+
     return 0;
 }
