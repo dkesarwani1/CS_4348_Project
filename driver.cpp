@@ -44,7 +44,7 @@ static bool lettersOnly(const string& s) {
 
 static void printMenu() {
     cout << "\nCommands:\n"
-              << "  password\n"
+              << "  passkey\n"
               << "  encrypt\n"
               << "  decrypt\n"
               << "  history\n"
@@ -143,15 +143,15 @@ int main(int argc, char* argv[])
         printMenu();
         if (!getline(cin, cmd)) break;
 
-        if (cmd == "password") {
-            cout << "Enter password (letters only): ";
+        if (cmd == "passkey") {
+            cout << "Enter passkey (letters only): ";
             getline(cin, pass);
 
-            writeLine(logPipe[1], "CMD password");
+            writeLine(logPipe[1], "CMD passkey");
 
             if (!lettersOnly(pass)) {
-                cout << "ERROR Password must be letters only\n";
-                writeLine(logPipe[1], "RESULT ERROR Password must be letters only");
+                cout << "ERROR passkey must be letters only\n";
+                writeLine(logPipe[1], "RESULT ERROR passkey must be letters only");
                 continue;
             }
 
@@ -171,8 +171,8 @@ int main(int argc, char* argv[])
 
             if (!hasPass) 
             {
-                cout << "ERROR Set password first\n";
-                writeLine(logPipe[1], "RESULT ERROR Set password first");
+                cout << "ERROR Set passkey first\n";
+                writeLine(logPipe[1], "RESULT ERROR Set passkey first");
                 continue;
             }
             cout << "Enter plaintext (letters only): ";
@@ -201,8 +201,8 @@ int main(int argc, char* argv[])
 
             if (!hasPass) 
             {
-                cout << "ERROR Set password first\n";
-                writeLine(logPipe[1], "RESULT ERROR Set password first");
+                cout << "ERROR Set passkey first\n";
+                writeLine(logPipe[1], "RESULT ERROR Set passkey first");
                 continue;
             }
 
