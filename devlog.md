@@ -141,3 +141,6 @@ After Finsihing did a lot of tests to see it working
 
 ## Next Steps
 Final review of formatting and will submit it.
+
+## 2026-03-13
+Forgot to update as I was veyr busy but did some changes on logger.cpp in formatting
